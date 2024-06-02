@@ -23,7 +23,7 @@ function filterIPA(text) {
 app.post("/", (req, res) => {
   let text = req.body.text;
 
-  let res = await fetch("https://api2.unalengua.com/ipav3", {
+  fetch("https://api2.unalengua.com/ipav3", {
     method: "POST",
     body: JSON.stringify({ text: text, lang: "en-US", mode: true })
   }).then((data) => data.json()).then((textData) => res.send(filterIPA(textData));
