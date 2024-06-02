@@ -4,15 +4,29 @@ const port = process.env.PORT || 3001;
 
 app.use(express.json());
 
-// app.get("/", (req, res) => res.type('html').send(html));
+function filterIPA(text) {
+  let bad = ["ˈ", "ˌ", "ː"];
 
-// const server = app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+  let filtered = "";
 
-// server.keepAliveTimeout = 120 * 1000;
-// server.headersTimeout = 120 * 1000;
+  for (let i = 0; i < ipa.length; i++) {
+    if (!bad.includes(text[i])) {
+      filtered += text[i];
+    }
+  }
+
+  filtered = filtered.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  return filtered;
+}
 
 app.post("/", (req, res) => {
-  res.send(req.body);
+  let text = req.body.text;
+
+  let res = await fetch("https://api2.unalengua.com/ipav3", {
+    method: "POST",
+    body: JSON.stringify({ text: text, lang: "en-US", mode: true })
+  }).then((data) => data.json()).then((textData) => res.send(filterIPA(textData));
 });
 
 const server = app.listen(port);
