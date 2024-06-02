@@ -35,9 +35,13 @@ app.post("/", async (req, res) => {
   let text = req.body.text;
 
   let rawIPA = await convertEngToIPA(text);
-  let filteredIPA = filterIPA(rawIPA);
 
-  res.send(filteredIPA);
+  if (rawIPA) {
+    let filteredIPA = filterIPA(rawIPA);
+    
+    res.send(filteredIPA);
+  } else {
+    res.send(false);
 });
 
 const server = app.listen(port);
