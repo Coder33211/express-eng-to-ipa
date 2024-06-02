@@ -26,7 +26,7 @@ app.post("/", (req, res) => {
   fetch("https://api2.unalengua.com/ipav3", {
     method: "POST",
     body: JSON.stringify({ text: text, lang: "en-US", mode: true })
-  }).then((data) => data.json()).then((textData) => res.send(filterIPA(textData));
+  }).then((data) => data.json()).then((textData) => res.send(filterIPA(textData)));
 });
 
 const server = app.listen(port);
