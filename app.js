@@ -26,7 +26,7 @@ async function convertEngToIPA(text) {
     body: JSON.stringify({ text: text, lang: "en-US", mode: true })
   })
     .then((data) => data.json())
-    .then((data) => data);
+    .then((data) => data.ipa);
 
   return data;
 }
@@ -37,10 +37,7 @@ app.post("/", async (req, res) => {
   let rawIPA = await convertEngToIPA(text);
   let filteredIPA = filterIPA(rawIPA);
 
-  // res.send(filteredIPA);
-  console.log(filteredIPA);
-  
-  res.send("HELLO THERE");
+  res.send("HELLO THERE: " + filteredIPA);
 });
 
 const server = app.listen(port);
