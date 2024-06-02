@@ -42,6 +42,7 @@ app.post("/", async (req, res) => {
     res.send(filteredIPA);
   } else {
     res.send(false);
+  }
 });
 
 const server = app.listen(port);
