@@ -20,13 +20,23 @@ function filterIPA(ipa) {
   return filtered;
 }
 
-app.post("/", (req, res) => {
-  let text = req.body.text;
-
-  fetch("https://api2.unalengua.com/ipav3", {
+async function convertEngToIPA(text) {
+  let data = await fetch("https://api2.unalengua.com/ipav3", {
     method: "POST",
     body: JSON.stringify({ text: text, lang: "en-US", mode: true })
-  }).then((data) => data.json()).then((textData) => res.send(filterIPA(textData)));
+  })
+    .then((data) => data.json())
+    .then((data) => data);
+
+  return data;
+}
+app.post("/", async (req, res) => {
+  let text = req.body.text;
+
+  let rawIPA = await convertEngToIPA(text);
+  let filteredIPA = filterIPA(rawIPA);
+
+  res.send(filteredIPA);
 });
 
 const server = app.listen(port);
