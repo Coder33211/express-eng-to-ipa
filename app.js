@@ -4,14 +4,14 @@ const port = process.env.PORT || 3001;
 
 app.use(express.json());
 
-function filterIPA(text) {
+function filterIPA(ipa) {
   let bad = ["ˈ", "ˌ", "ː"];
 
   let filtered = "";
 
   for (let i = 0; i < ipa.length; i++) {
-    if (!bad.includes(text[i])) {
-      filtered += text[i];
+    if (!bad.includes(ipa[i])) {
+      filtered += ipa[i];
     }
   }
 
