@@ -33,7 +33,7 @@ async function convertEngToIPA(text) {
 }
 
 async function convertTextToImageData(text) {
-  let blob = await fetch(
+  let resp = await fetch(
     "https://api-inference.huggingface.co/models/OFA-Sys/small-stable-diffusion-v0",
     {
       headers: {
@@ -42,10 +42,10 @@ async function convertTextToImageData(text) {
       method: "POST",
       body: JSON.stringify(text)
     }
-  ).then((data) => data.blob());
+  );
   
   // Convert Blob to Buffer
-  let buffer = await blob.arrayBuffer();
+  let buffer = await resp.buffer();
   let metadata = await sharp(buffer).metadata();
   let { width, height } = metadata;
 
