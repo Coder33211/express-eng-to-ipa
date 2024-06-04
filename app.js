@@ -64,7 +64,7 @@ app.post("/", async (req, res) => {
       res.send(false);
     }
   } else if (req.body.type == "img") {
-    let buffer = await convertTextToImageData(req.body.text);
+    let buffer = await convertTextToBuffer(req.body.text);
 
     getPixels(buffer, async (err, pixels) => {
       if (err) {
