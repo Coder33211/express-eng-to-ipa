@@ -83,14 +83,22 @@ app.post("/", async (req, res) => {
       let filteredIPA = filterIPA(rawIPA);
       
       res.send(filteredIPA);
+
+      return;
     } else {
       res.send(false);
+      
+      return;
     }
   } else if (req.body.type == "img") {
     let rgbData = await convertTextToImageData(text);
     
     res.json(rgbData);
-  } 
+
+    return;
+  }
+
+  res.send(false);
 });
 
 const server = app.listen(port);
