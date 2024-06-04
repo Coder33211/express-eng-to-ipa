@@ -47,7 +47,7 @@ async function convertTextToImageData(text) {
   let buffer = await resp.arrayBuffer();
   buffer = Buffer.from(buffer);
 
-  let image = await Jimp.read(buffer);
+  let image = await Jimp.read(buffer, {Jimp.MIME_JPEG});
 
   let width = image.bitmap.width;
   let height = image.bitmap.height;
