@@ -39,7 +39,7 @@ async function convertTextToImageData(text) {
     "https://api-inference.huggingface.co/models/OFA-Sys/small-stable-diffusion-v0",
     {
       headers: {
-        Authorization: "Bearer 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"
+        Authorization: "Bearer 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"
       },
       method: "POST",
       body: JSON.stringify({inputs: text})
