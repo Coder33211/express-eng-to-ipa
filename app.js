@@ -46,6 +46,10 @@ async function convertTextToImageData(text) {
     }
   );
 
+  if !(resp.ok) {
+    return false;
+  }
+
   let buffer = await resp.arrayBuffer();
   buffer = Buffer.from(buffer);
   // Use Jimp to read the temporary image file
@@ -92,10 +96,16 @@ app.post("/", async (req, res) => {
     }
   } else if (req.body.type == "img") {
     let rgbData = await convertTextToImageData(text);
-    
-    res.json(rgbData);
 
-    return;
+    if (rgbData) {
+      res.json(rgbData);
+
+      return;
+    } else {
+      res.send(false);
+
+      return;
+    }
   }
 
   res.send(false);
