@@ -87,7 +87,7 @@ app.post("/", async (req, res) => {
       res.send(false);
     }
   } else if (req.body.type == "img") {
-    let data = await convertTextToImage(req.body.text);
+    let data = await convertTextToImageData(req.body.text);
 
     res.json(data);
   }
