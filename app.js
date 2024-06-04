@@ -1,4 +1,5 @@
 const express = require("express");
+const jpeg = require("jpeg-js");
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -31,8 +32,8 @@ async function convertEngToIPA(text) {
   return data;
 }
 
-async function convertTextToImage(text) {
-  let response = await fetch(
+async function convertTextToImageData(text) {
+  let blob = await fetch(
     "https://api-inference.huggingface.co/models/OFA-Sys/small-stable-diffusion-v0",
     {
       headers: {
@@ -41,9 +42,35 @@ async function convertTextToImage(text) {
       method: "POST",
       body: JSON.stringify(text)
     }
-  ).then((data) => data.json());
+  ).then((data) => data.blob());
+  
+  // Convert Blob to Buffer
+  let buffer = await blob.arrayBuffer().then(buf => Buffer.from(buf));
+  // Decode JPEG Buffer to raw image data
+  let rawImageData = jpeg.decode(buffer, { useTArray: true });
 
-  return response;
+  let { width, height, data } = rawImageData;
+
+  // Convert raw image data to a 2D array of pixels
+  let pixels = [];
+  
+  for (let y = 0; y < height; y += 4) {
+    let row = [];
+    for (let x = 0; x < width; x += 4) {
+      let idx = (y * width + x) * 4;
+      // let pixel = {
+      //   r: data[idx],
+      //   g: data[idx + 1],
+      //   b: data[idx + 2],
+      //   a: data[idx + 3], // JPEG images don't have alpha, so it will be 255
+      // };
+      row.push([data[idx], data[idx + 1], data[idx + 2]]);
+    }
+    
+    pixels.push(row);
+  }
+
+  return pixels;
 }
 
 app.post("/", async (req, res) => {
@@ -60,42 +87,9 @@ app.post("/", async (req, res) => {
       res.send(false);
     }
   } else if (req.body.type == "img") {
-    let blob = convertTextToImage(req.body.text);
+    let data = await convertTextToImage(req.body.text);
 
-    let img = new Image();
-    let canvas = document.createElement("Canvas");
-  
-    let data = [];
-  
-    img.addEventListener("load", () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-  
-      let ctx = canvas.getContext("2d");
-  
-      ctx.drawImage(img, 0, 0);
-  
-      let imgSize = 128;
-      let af = img.width / imgSize;
-  
-      for (let h = 0; h < img.height; h += af) {
-        data.push([]);
-  
-        for (let w = 0; w < img.width; w += af) {
-          let imgData = ctx.getImageData(w, h, 1, 1);
-  
-          let red = imgData.data[0];
-          let green = imgData.data[1];
-          let blue = imgData.data[2];
-  
-          data[data.length - 1].push([red, green, blue]);
-        }
-      }
-
-      res.json(data);
-    });
-  
-    img.src = URL.createObjectURL(blob);
+    res.json(data);
   }
 });
 
