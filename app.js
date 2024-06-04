@@ -46,7 +46,7 @@ async function convertTextToImageData(text) {
   
   // Convert Blob to Buffer
   let buffer = await blob.arrayBuffer();
-  let imageData = await sharp(buffer).extract({width: 512, height: 512});
+  let imageData = await sharp(buffer).extract({left: 0, top: 0, width: 512, height: 512});
   let pixelData = imageData.data;
 
   let pixels = [];
