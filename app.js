@@ -1,5 +1,5 @@
 const express = require("express");
-// const Jimp = require("jimp");
+const Jimp = require("jimp");
 const app = express();
 const port = process.env.PORT || 3001;
 // const fs = require("fs").promises;
@@ -34,48 +34,44 @@ async function convertEngToIPA(text) {
   return data;
 }
 
-// async function convertTextToImageData(text) {
-//   let resp = await fetch(
-//     "https://api-inference.huggingface.co/models/OFA-Sys/small-stable-diffusion-v0",
-//     {
-//       headers: {
-//         Authorization: "Bearer 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"
-//       },
-//       method: "POST",
-//       body: JSON.stringify(text)
-//     }
-//   );
+async function convertTextToImageData(text) {
+  let resp = await fetch(
+    "https://api-inference.huggingface.co/models/OFA-Sys/small-stable-diffusion-v0",
+    {
+      headers: {
+        Authorization: "Bearer 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"
+      },
+      method: "POST",
+      body: JSON.stringify({inputs: text})
+    }
+  );
 
-//   let buffer = await resp.arrayBuffer();
-//   buffer = Buffer.from(buffer);
+  let buffer = await resp.arrayBuffer();
+  buffer = Buffer.from(buffer);
+  // Use Jimp to read the temporary image file
+  let image = await Jimp.read(buffer);
 
-//   const tempFilePath = path.join("", "temp_image.jpg");
-//   await fs.writeFile(tempFilePath, buffer);
+  let width = image.bitmap.width;
+  let height = image.bitmap.height;
 
-//   // Use Jimp to read the temporary image file
-//   const image = await Jimp.read(tempFilePath);
+  // Initialize a double-nested array to store RGB data
+  let rgbData = [];
 
-//   // Remove the temporary file
-//   await fs.unlink(tempFilePath);
-
-//   const width = image.bitmap.width;
-//   const height = image.bitmap.height;
-
-//   // Initialize a double-nested array to store RGB data
-//   const rgbData = [];
-
-//   // Iterate through each pixel
-//   for (let y = 0; y < height; y++) {
-//     const row = [];
-//     for (let x = 0; x < width; x++) {
-//       const pixelColor = Jimp.intToRGBA(image.getPixelColor(x, y));
-//       row.push([pixelColor.r, pixelColor.g, pixelColor.b]);
-//     }
-//     rgbData.push(row);
-//   }
+  // Iterate through each pixel
+  for (let y = 0; y < height; y++) {
+    let row = [];
+    
+    for (let x = 0; x < width; x++) {
+      let pixelColor = Jimp.intToRGBA(image.getPixelColor(x, y));
+      
+      row.push([pixelColor.r, pixelColor.g, pixelColor.b]);
+    }
+    
+    rgbData.push(row);
+  }
   
-//   return rgbData;
-// }
+  return rgbData;
+}
 
 app.post("/", async (req, res) => {
   let text = req.body.text;
@@ -90,12 +86,11 @@ app.post("/", async (req, res) => {
     } else {
       res.send(false);
     }
+  } else if (req.body.type == "img") {
+    let rgbData = await convertTextToImageData(text);
+    
+    res.json(rgbData);
   } 
-  // else if (req.body.type == "img") {
-  //   let rgbData = await convertTextToImageData(text);
-
-  //   res.json(rgbData);
-  // }
 });
 
 const server = app.listen(port);
