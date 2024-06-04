@@ -62,10 +62,10 @@ async function convertTextToImageData(text, token) {
   let rgbData = [];
 
   // Iterate through each pixel
-  for (let y = 0; y < height; y++) {
+  for (let y = 0; y < height; y += 4) {
     let row = [];
     
-    for (let x = 0; x < width; x++) {
+    for (let x = 0; x < width; x += 4) {
       let pixelColor = Jimp.intToRGBA(image.getPixelColor(x, y));
       
       row.push([pixelColor.r, pixelColor.g, pixelColor.b]);
