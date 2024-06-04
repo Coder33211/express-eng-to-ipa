@@ -1,9 +1,9 @@
 const express = require("express");
-const Jimp = require("jimp");
+// const Jimp = require("jimp");
 const app = express();
 const port = process.env.PORT || 3001;
-const fs = require("fs").promises;
-const path = require("path");
+// const fs = require("fs").promises;
+// const path = require("path");
 
 app.use(express.json());
 
@@ -34,48 +34,48 @@ async function convertEngToIPA(text) {
   return data;
 }
 
-async function convertTextToImageData(text) {
-  let resp = await fetch(
-    "https://api-inference.huggingface.co/models/OFA-Sys/small-stable-diffusion-v0",
-    {
-      headers: {
-        Authorization: "Bearer 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"
-      },
-      method: "POST",
-      body: JSON.stringify(text)
-    }
-  );
+// async function convertTextToImageData(text) {
+//   let resp = await fetch(
+//     "https://api-inference.huggingface.co/models/OFA-Sys/small-stable-diffusion-v0",
+//     {
+//       headers: {
+//         Authorization: "Bearer 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"
+//       },
+//       method: "POST",
+//       body: JSON.stringify(text)
+//     }
+//   );
 
-  let buffer = await resp.arrayBuffer();
-  buffer = Buffer.from(buffer);
+//   let buffer = await resp.arrayBuffer();
+//   buffer = Buffer.from(buffer);
 
-  const tempFilePath = path.join("", "temp_image.jpg");
-  await fs.writeFile(tempFilePath, buffer);
+//   const tempFilePath = path.join("", "temp_image.jpg");
+//   await fs.writeFile(tempFilePath, buffer);
 
-  // Use Jimp to read the temporary image file
-  const image = await Jimp.read(tempFilePath);
+//   // Use Jimp to read the temporary image file
+//   const image = await Jimp.read(tempFilePath);
 
-  // Remove the temporary file
-  await fs.unlink(tempFilePath);
+//   // Remove the temporary file
+//   await fs.unlink(tempFilePath);
 
-  const width = image.bitmap.width;
-  const height = image.bitmap.height;
+//   const width = image.bitmap.width;
+//   const height = image.bitmap.height;
 
-  // Initialize a double-nested array to store RGB data
-  const rgbData = [];
+//   // Initialize a double-nested array to store RGB data
+//   const rgbData = [];
 
-  // Iterate through each pixel
-  for (let y = 0; y < height; y++) {
-    const row = [];
-    for (let x = 0; x < width; x++) {
-      const pixelColor = Jimp.intToRGBA(image.getPixelColor(x, y));
-      row.push([pixelColor.r, pixelColor.g, pixelColor.b]);
-    }
-    rgbData.push(row);
-  }
+//   // Iterate through each pixel
+//   for (let y = 0; y < height; y++) {
+//     const row = [];
+//     for (let x = 0; x < width; x++) {
+//       const pixelColor = Jimp.intToRGBA(image.getPixelColor(x, y));
+//       row.push([pixelColor.r, pixelColor.g, pixelColor.b]);
+//     }
+//     rgbData.push(row);
+//   }
   
-  return rgbData;
-}
+//   return rgbData;
+// }
 
 app.post("/", async (req, res) => {
   let text = req.body.text;
@@ -90,11 +90,12 @@ app.post("/", async (req, res) => {
     } else {
       res.send(false);
     }
-  } else if (req.body.type == "img") {
-    let rgbData = await convertTextToImageData(text);
+  } 
+  // else if (req.body.type == "img") {
+  //   let rgbData = await convertTextToImageData(text);
 
-    res.json(rgbData);
-  }
+  //   res.json(rgbData);
+  // }
 });
 
 const server = app.listen(port);
