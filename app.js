@@ -46,39 +46,34 @@ async function convertTextToImageData(text) {
   
   // Convert Blob to Buffer
   let buffer = await resp.arrayBuffer();
-  buffer = Buffer.from(buffer);
-  
-  let metadata = await sharp(buffer).metadata();
-  let { width, height } = metadata;
+  getPixels(buffer, async (err, pixels) => {
+    if (err) {
+        throw new Error('Error decoding image:', err);
+    }
 
-  // Extract pixel RGB data
-  let pixels = [];
+    const width = pixels.shape[0];
+    const height = pixels.shape[1];
+    const channels = pixels.shape[2];
 
-  // Iterate over each pixel row
-  for (let y = 0; y < height; y+=4) {
-      const row = [];
-      // Iterate over each pixel column
-      for (let x = 0; x < width; x+=4) {
-          // Get pixel color
-          const pixel = await sharp(buffer)
-              .ensureAlpha()
-              .extract({ left: x, top: y, width: 1, height: 1 })
-              .raw()
-              .toBuffer();
+    // Initialize a double-nested array to store RGB data
+    const rgbData = [];
 
-          // Extract RGB values
-          const r = pixel[0];
-          const g = pixel[1];
-          const b = pixel[2];
+    // Iterate through each pixel
+    for (let y = 0; y < height; y++) {
+        const row = [];
+        for (let x = 0; x < width; x++) {
+            const pixel = [];
+            for (let c = 0; c < channels; c++) {
+                pixel.push(pixels.get(x, y, c));
+            }
+            row.push(pixel);
+        }
+        rgbData.push(row);
+    }
 
-          // Push RGB values to the row array
-          row.push([r, g, b]);
-      }
-      // Push the row array to the main array
-      pixels.push(row);
-  }
-
-  return pixels;
+    // Now rgbData contains the RGB data of the image
+    console.log(rgbData);
+});
 }
 
 app.post("/", async (req, res) => {
