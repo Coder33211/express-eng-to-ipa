@@ -1,5 +1,5 @@
 const express = require("express");
-const getPixels = require("get-pixels");
+const Jimp = require("jimp");
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -32,7 +32,7 @@ async function convertEngToIPA(text) {
   return data;
 }
 
-async function convertTextToBuffer(text) {
+async function convertTextToImageData(text) {
   let resp = await fetch(
     "https://api-inference.huggingface.co/models/OFA-Sys/small-stable-diffusion-v0",
     {
@@ -43,17 +43,35 @@ async function convertTextToBuffer(text) {
       body: JSON.stringify(text)
     }
   );
-  
-  // Convert Blob to Buffer
-  let buffer = await resp.arrayBuffer();
 
-  return Buffer.from(buffer);
+  let buffer = await resp.arrayBuffer();
+  buffer = Buffer.from(buffer);
+
+  let image = await Jimp.read(buffer);
+
+  let width = image.bitmap.width;
+  let height = image.bitmap.height;
+
+  // Initialize a double-nested array to store RGB data
+  let rgbData = [];
+
+  // Iterate through each pixel
+  for (let y = 0; y < height; y+=4) {
+    let row = [];
+    for (let x = 0; x < width; x+=4) {
+      const pixelColor = Jimp.intToRGBA(image.getPixelColor(x, y));
+      row.push([pixelColor.r, pixelColor.g, pixelColor.b]);
+    }
+    rgbData.push(row);
+  }
+
+  return rgbData;
 }
 
 app.post("/", async (req, res) => {
+  let text = req.body.text;
+  
   if (req.body.type == "text") {
-    let text = req.body.text;
-
     let rawIPA = await convertEngToIPA(text);
   
     if (rawIPA) {
@@ -64,36 +82,9 @@ app.post("/", async (req, res) => {
       res.send(false);
     }
   } else if (req.body.type == "img") {
-    let buffer = await convertTextToBuffer(req.body.text);
+    let rgbData = await convertTextToImageData(text);
 
-    getPixels(buffer, async (err, pixels) => {
-      if (err) {
-        throw new Error('Error decoding image:', err);
-      }
-  
-      const width = pixels.shape[0];
-      const height = pixels.shape[1];
-      const channels = pixels.shape[2];
-  
-      // Initialize a double-nested array to store RGB data
-      const rgbData = [];
-  
-      // Iterate through each pixel
-      for (let y = 0; y < height; y++) {
-        const row = [];
-        for (let x = 0; x < width; x++) {
-          const pixel = [];
-          for (let c = 0; c < channels; c++) {
-            pixel.push(pixels.get(x, y, c));
-          }
-          row.push(pixel);
-        }
-        rgbData.push(row);
-      }
-  
-      // Now rgbData contains the RGB data of the image
-      res.json(rgbData);
-    });
+    res.json(rgbData);
   }
 });
 
