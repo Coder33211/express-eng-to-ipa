@@ -45,7 +45,9 @@ async function convertTextToImageData(text) {
   );
   
   // Convert Blob to Buffer
-  let buffer = await resp.buffer();
+  let buffer = await resp.arrayBuffer();
+  buffer = Buffer.from(buffer);
+  
   let metadata = await sharp(buffer).metadata();
   let { width, height } = metadata;
 
