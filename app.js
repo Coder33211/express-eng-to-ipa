@@ -47,24 +47,31 @@ async function convertTextToImageData(text) {
   let buffer = await resp.arrayBuffer();
   buffer = Buffer.from(buffer);
 
-  let image = await Jimp.read(buffer, {Jimp.MIME_JPEG});
+  const tempFilePath = path.join("", "temp_image.jpg");
+  await fs.writeFile(tempFilePath, buffer);
 
-  let width = image.bitmap.width;
-  let height = image.bitmap.height;
+  // Use Jimp to read the temporary image file
+  const image = await Jimp.read(tempFilePath);
+
+  // Remove the temporary file
+  await fs.unlink(tempFilePath);
+
+  const width = image.bitmap.width;
+  const height = image.bitmap.height;
 
   // Initialize a double-nested array to store RGB data
-  let rgbData = [];
+  const rgbData = [];
 
   // Iterate through each pixel
-  for (let y = 0; y < height; y+=4) {
-    let row = [];
-    for (let x = 0; x < width; x+=4) {
+  for (let y = 0; y < height; y++) {
+    const row = [];
+    for (let x = 0; x < width; x++) {
       const pixelColor = Jimp.intToRGBA(image.getPixelColor(x, y));
       row.push([pixelColor.r, pixelColor.g, pixelColor.b]);
     }
     rgbData.push(row);
   }
-
+  
   return rgbData;
 }
 
