@@ -2,6 +2,8 @@ const express = require("express");
 const Jimp = require("jimp");
 const app = express();
 const port = process.env.PORT || 3001;
+const fs = require("fs").promises;
+const path = require("path");
 
 app.use(express.json());
 
