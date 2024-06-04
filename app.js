@@ -1,5 +1,5 @@
 const express = require("express");
-const jpeg = require("jpeg-js");
+const sharp = require("sharp");
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -45,30 +45,20 @@ async function convertTextToImageData(text) {
   ).then((data) => data.blob());
   
   // Convert Blob to Buffer
-  // let buffer = await blob.arrayBuffer().then(buf => Buffer.from(buf));
   let buffer = await blob.arrayBuffer();
-  buffer = new Uint8Array(buffer);
-  // Decode JPEG Buffer to raw image data
-  let rawImageData = jpeg.decode(buffer, { useTArray: true });
+  let imageData = await sharp(buffer).extract({width: 512, height: 512});
+  let pixelData = imageData.data;
 
-  let { width, height, data } = rawImageData;
-
-  // Convert raw image data to a 2D array of pixels
   let pixels = [];
-  
-  for (let y = 0; y < height; y += 4) {
+  for (let y = 0; y < 512; y+=4) {
     let row = [];
-    for (let x = 0; x < width; x += 4) {
-      let idx = (y * width + x) * 4;
-      // let pixel = {
-      //   r: data[idx],
-      //   g: data[idx + 1],
-      //   b: data[idx + 2],
-      //   a: data[idx + 3], // JPEG images don't have alpha, so it will be 255
-      // };
-      row.push([data[idx], data[idx + 1], data[idx + 2]]);
+    for (let x = 0; x < 512; x+=4) {
+      let offset = (y * 512 * 4) + (x * 4); // Calculate offset for each pixel (assuming RGBA format)
+      let red = pixelData[offset];
+      let green = pixelData[offset + 1];
+      let blue = pixelData[offset + 2];
+      row.push([ red, green, blue ]);
     }
-    
     pixels.push(row);
   }
 
