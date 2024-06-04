@@ -34,19 +34,19 @@ async function convertEngToIPA(text) {
   return data;
 }
 
-async function convertTextToImageData(text) {
+async function convertTextToImageData(text, token) {
   let resp = await fetch(
     "https://api-inference.huggingface.co/models/OFA-Sys/small-stable-diffusion-v0",
     {
       headers: {
-        Authorization: "Bearer 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"
+        Authorization: "Bearer " + token
       },
       method: "POST",
       body: JSON.stringify({inputs: text})
     }
   );
 
-  if !(resp.ok) {
+  if (!resp.ok) {
     return false;
   }
 
@@ -95,7 +95,15 @@ app.post("/", async (req, res) => {
       return;
     }
   } else if (req.body.type == "img") {
-    let rgbData = await convertTextToImageData(text);
+    let token = req.body.token;
+
+    if (!token) {
+      res.send(false);
+
+      return;
+    }
+    
+    let rgbData = await convertTextToImageData(text, token);
 
     if (rgbData) {
       res.json(rgbData);
