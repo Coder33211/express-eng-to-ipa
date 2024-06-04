@@ -45,7 +45,8 @@ async function convertTextToImageData(text) {
   ).then((data) => data.blob());
   
   // Convert Blob to Buffer
-  let buffer = await blob.arrayBuffer().then(buf => Buffer.from(buf));
+  // let buffer = await blob.arrayBuffer().then(buf => Buffer.from(buf));
+  let buffer = await blob.arrayBuffer();
   // Decode JPEG Buffer to raw image data
   let rawImageData = jpeg.decode(buffer, { useTArray: true });
 
