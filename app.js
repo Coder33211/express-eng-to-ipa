@@ -46,20 +46,34 @@ async function convertTextToImageData(text) {
   
   // Convert Blob to Buffer
   let buffer = await blob.arrayBuffer();
-  let imageData = await sharp(buffer).extract({left: 0, top: 0, width: 512, height: 512});
-  let pixelData = imageData.data;
+  let metadata = await sharp(buffer).metadata();
+  let { width, height } = metadata;
 
+  // Extract pixel RGB data
   let pixels = [];
-  for (let y = 0; y < 512; y+=4) {
-    let row = [];
-    for (let x = 0; x < 512; x+=4) {
-      let offset = (y * 512 * 4) + (x * 4); // Calculate offset for each pixel (assuming RGBA format)
-      let red = pixelData[offset];
-      let green = pixelData[offset + 1];
-      let blue = pixelData[offset + 2];
-      row.push([ red, green, blue ]);
-    }
-    pixels.push(row);
+
+  // Iterate over each pixel row
+  for (let y = 0; y < height; y+=4) {
+      const row = [];
+      // Iterate over each pixel column
+      for (let x = 0; x < width; x+=4) {
+          // Get pixel color
+          const pixel = await sharp(buffer)
+              .ensureAlpha()
+              .extract({ left: x, top: y, width: 1, height: 1 })
+              .raw()
+              .toBuffer();
+
+          // Extract RGB values
+          const r = pixel[0];
+          const g = pixel[1];
+          const b = pixel[2];
+
+          // Push RGB values to the row array
+          row.push([r, g, b]);
+      }
+      // Push the row array to the main array
+      pixels.push(row);
   }
 
   return pixels;
